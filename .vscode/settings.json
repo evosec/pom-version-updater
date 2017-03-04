@@ -1,0 +1,4 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.jdt.ls.vmargs": "-javaagent:/Users/ArloLOK/.m2/repository/org/projectlombok/lombok/1.16.14/lombok-1.16.14.jar -Xbootclasspath/a:/Users/ArloLOK/.m2/repository/org/projectlombok/lombok/1.16.14/lombok-1.16.14.jar"
+}
