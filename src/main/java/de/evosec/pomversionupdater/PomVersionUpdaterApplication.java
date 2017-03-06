@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
@@ -60,9 +61,11 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 			assertWorkingTreeIsClean(git);
 
-			Artifact beforeParent =
-			        selectArtifactsFromPom(pom, "project > parent").get(0);
-			if (beforeParent != null && beforeParent.getVersion() != null) {
+			Optional<Artifact> beforeParent =
+			        selectArtifactsFromPom(pom, "project > parent").stream()
+			            .findFirst();
+			if (beforeParent.isPresent()
+			        && beforeParent.get().getVersion() != null) {
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 				    "--batch-mode", "versions:update-parent",
 				    "-DgenerateBackupPoms=false").inheritIO();
@@ -71,7 +74,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				    "mvn failed");
 				Artifact afterParent =
 				        selectArtifactsFromPom(pom, "project > parent").get(0);
-				commitIfNecessary(git, beforeParent, afterParent);
+				commitIfNecessary(git, beforeParent.get(), afterParent);
 			}
 
 			processDependencies(pom, git,
