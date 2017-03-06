@@ -26,9 +26,11 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.util.Assert;
 
 @SpringBootApplication
+@EnableConfigurationProperties(PomVersionUpdaterProperties.class)
 public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	private static final Logger LOG =
