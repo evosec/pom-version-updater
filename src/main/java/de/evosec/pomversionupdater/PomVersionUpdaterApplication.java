@@ -85,11 +85,11 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		List<Artifact> dependencies = selectArtifactsFromPom(pom, selector);
 		for (Artifact dependency : dependencies.stream()
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
-			String include = String.format("%s:%s", dependency.getGroupId(),
+			String includes = String.format("%s:%s", dependency.getGroupId(),
 			    dependency.getArtifactId());
 			Assert.isTrue(0 == new ProcessBuilder(mavenCommand, "--batch-mode",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
-			    "-Dinclude=" + include).inheritIO().start().waitFor(),
+			    "-Dincludes=" + includes).inheritIO().start().waitFor(),
 			    "mvn failed");
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
 			    .stream().filter(a -> a.equals(dependency)).findAny().get();
