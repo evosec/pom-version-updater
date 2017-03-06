@@ -22,6 +22,7 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -40,6 +41,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
 	}
 
+	@Autowired
+	private PomVersionUpdaterProperties properties;
 	private String mavenCommand;
 
 	public PomVersionUpdaterApplication() {
@@ -129,6 +132,10 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				Artifact artifact =
 				        new Artifact(element.select("groupId").first().text(),
 				            element.select("artifactId").first().text());
+				if (properties.getGroupId()
+				    .equalsIgnoreCase(artifact.getGroupId())) {
+					continue;
+				}
 				Elements versionSelect = element.select("version");
 				if (!versionSelect.isEmpty()) {
 					artifact.setVersion(versionSelect.first().text());
