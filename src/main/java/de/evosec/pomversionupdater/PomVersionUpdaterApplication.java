@@ -99,11 +99,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		List<Artifact> dependencies = selectArtifactsFromPom(pom, selector);
 		for (Artifact dependency : dependencies.stream()
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
-			String includes = String.format("%s:%s", dependency.getGroupId(),
-			    dependency.getArtifactId());
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 			    "--batch-mode", "versions:use-latest-versions",
-			    "-DgenerateBackupPoms=false", "-Dincludes=" + includes)
+			    "-DgenerateBackupPoms=false", "-Dincludes=" + dependency)
 			        .inheritIO();
 			LOG.info("Calling {}", processBuilder.command());
 			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
@@ -116,9 +114,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	private void commitIfNecessary(Git git, Artifact before, Artifact after)
 	        throws Exception {
 		if (!after.getVersion().equals(before.getVersion())) {
-			String message = String.format("%s:%s: %s -> %s",
-			    after.getGroupId(), after.getArtifactId(), before.getVersion(),
-			    after.getVersion());
+			String message =
+			        String.format("%s -> %s", before, after.getVersion());
 			git.add().addFilepattern("pom.xml").call();
 			git.commit().setAllowEmpty(false).setMessage(message).call();
 			assertWorkingTreeIsClean(git);
