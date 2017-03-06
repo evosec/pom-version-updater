@@ -47,12 +47,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		Path pom = Paths.get("pom.xml").toAbsolutePath();
 		try (Git git = Git.open(pom.getParent().toFile())) {
 
-			git.getRepository().getRefDatabase().refresh();
-			IndexDiff diffIndex = new IndexDiff(git.getRepository(),
-			    Constants.HEAD, new FileTreeIterator(git.getRepository()));
-			if (diffIndex.diff()) {
-				throw new Exception("The working tree is not clean");
-			}
+			assertWorkingTreeIsClean(git);
 
 			Artifact beforeParent =
 			        selectArtifactsFromPom(pom, "project > parent").get(0);
@@ -70,6 +65,16 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			    "project > dependencyManagement > dependencies > dependency");
 			processDependencies(pom, git,
 			    "project > dependencies > dependency");
+		}
+	}
+
+	private void assertWorkingTreeIsClean(Git git)
+	        throws IOException, Exception {
+		git.getRepository().getRefDatabase().refresh();
+		IndexDiff diffIndex = new IndexDiff(git.getRepository(), Constants.HEAD,
+		    new FileTreeIterator(git.getRepository()));
+		if (diffIndex.diff()) {
+			throw new Exception("The working tree is not clean");
 		}
 	}
 
@@ -97,6 +102,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			    after.getVersion());
 			git.add().addFilepattern("pom.xml").call();
 			git.commit().setAllowEmpty(false).setMessage(message).call();
+			assertWorkingTreeIsClean(git);
 		}
 	}
 
