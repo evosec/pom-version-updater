@@ -24,6 +24,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.util.Assert;
 
 @SpringBootApplication
 public class PomVersionUpdaterApplication implements ApplicationRunner {
@@ -52,10 +53,11 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			Artifact beforeParent =
 			        selectArtifactsFromPom(pom, "project > parent").get(0);
 			if (beforeParent != null && beforeParent.getVersion() != null) {
-				// TODO: log output and check return code
-				new ProcessBuilder(mavenCommand, "--batch-mode",
-				    "versions:update-parent", "-DgenerateBackupPoms=false")
-				        .start().waitFor();
+				Assert.isTrue(
+				    0 == new ProcessBuilder(mavenCommand, "--batch-mode",
+				        "versions:update-parent", "-DgenerateBackupPoms=false")
+				            .inheritIO().start().waitFor(),
+				    "mvn failed");
 				Artifact afterParent =
 				        selectArtifactsFromPom(pom, "project > parent").get(0);
 				commitIfNecessary(git, beforeParent, afterParent);
@@ -85,9 +87,10 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			String include = String.format("%s:%s", dependency.getGroupId(),
 			    dependency.getArtifactId());
-			new ProcessBuilder(mavenCommand, "--batch-mode",
+			Assert.isTrue(0 == new ProcessBuilder(mavenCommand, "--batch-mode",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
-			    "-Dinclude=" + include).start().waitFor();
+			    "-Dinclude=" + include).inheritIO().start().waitFor(),
+			    "mvn failed");
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
 			    .stream().filter(a -> a.equals(dependency)).findAny().get();
 			commitIfNecessary(git, dependency, afterDependency);
