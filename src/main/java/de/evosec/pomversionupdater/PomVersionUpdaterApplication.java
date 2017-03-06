@@ -135,7 +135,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				Artifact artifact =
 				        new Artifact(element.select("groupId").first().text(),
 				            element.select("artifactId").first().text());
-				if (properties.getGroupId()
+				if (!properties.getGroupId()
 				    .equalsIgnoreCase(artifact.getGroupId())) {
 					continue;
 				}
