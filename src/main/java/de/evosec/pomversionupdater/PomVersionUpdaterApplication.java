@@ -20,6 +20,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -28,6 +30,9 @@ import org.springframework.util.Assert;
 
 @SpringBootApplication
 public class PomVersionUpdaterApplication implements ApplicationRunner {
+
+	private static final Logger LOG =
+	        LoggerFactory.getLogger(PomVersionUpdaterApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
@@ -53,10 +58,11 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			Artifact beforeParent =
 			        selectArtifactsFromPom(pom, "project > parent").get(0);
 			if (beforeParent != null && beforeParent.getVersion() != null) {
-				Assert.isTrue(
-				    0 == new ProcessBuilder(mavenCommand, "--batch-mode",
-				        "versions:update-parent", "-DgenerateBackupPoms=false")
-				            .inheritIO().start().waitFor(),
+				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
+				    "--batch-mode", "versions:update-parent",
+				    "-DgenerateBackupPoms=false").inheritIO();
+				LOG.info("Calling {}", processBuilder.command());
+				Assert.isTrue(0 == processBuilder.start().waitFor(),
 				    "mvn failed");
 				Artifact afterParent =
 				        selectArtifactsFromPom(pom, "project > parent").get(0);
@@ -87,10 +93,12 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			String includes = String.format("%s:%s", dependency.getGroupId(),
 			    dependency.getArtifactId());
-			Assert.isTrue(0 == new ProcessBuilder(mavenCommand, "--batch-mode",
-			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
-			    "-Dincludes=" + includes).inheritIO().start().waitFor(),
-			    "mvn failed");
+			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
+			    "--batch-mode", "versions:use-latest-versions",
+			    "-DgenerateBackupPoms=false", "-Dincludes=" + includes)
+			        .inheritIO();
+			LOG.info("Calling {}", processBuilder.command());
+			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
 			    .stream().filter(a -> a.equals(dependency)).findAny().get();
 			commitIfNecessary(git, dependency, afterDependency);
