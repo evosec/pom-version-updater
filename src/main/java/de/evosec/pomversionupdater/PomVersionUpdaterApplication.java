@@ -32,6 +32,16 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
 	}
 
+	private String mavenCommand;
+
+	public PomVersionUpdaterApplication() {
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
+			mavenCommand = "mvn.cmd";
+		} else {
+			mavenCommand = "mvn";
+		}
+	}
+
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		Path pom = Paths.get("pom.xml").toAbsolutePath();
@@ -48,8 +58,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			        selectArtifactsFromPom(pom, "project > parent").get(0);
 			if (beforeParent != null && beforeParent.getVersion() != null) {
 				// TODO: log output and check return code
-				new ProcessBuilder("mvn", "versions:update-parent",
-				    "-DgenerateBackupPoms=false").start().waitFor();
+				new ProcessBuilder(mavenCommand, "--batch-mode",
+				    "versions:update-parent", "-DgenerateBackupPoms=false")
+				        .start().waitFor();
 				Artifact afterParent =
 				        selectArtifactsFromPom(pom, "project > parent").get(0);
 				commitIfNecessary(git, beforeParent, afterParent);
@@ -69,9 +80,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			String include = String.format("%s:%s", dependency.getGroupId(),
 			    dependency.getArtifactId());
-			new ProcessBuilder("mvn", "versions:use-latest-versions",
-			    "-DgenerateBackupPoms=false", "-Dinclude=" + include).start()
-			        .waitFor();
+			new ProcessBuilder(mavenCommand, "--batch-mode",
+			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
+			    "-Dinclude=" + include).start().waitFor();
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
 			    .stream().filter(a -> a.equals(dependency)).findAny().get();
 			commitIfNecessary(git, dependency, afterDependency);
