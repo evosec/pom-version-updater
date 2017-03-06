@@ -105,9 +105,18 @@ public class Artifact {
 
 	@Override
 	public String toString() {
-		return "Artifact [groupId=" + groupId + ", artifactId=" + artifactId
-		        + ", type=" + type + ", classifier=" + classifier + ", version="
-		        + version + "]";
+		StringBuilder builder =
+		        new StringBuilder(groupId).append(":").append(artifactId);
+		if (type != null) {
+			builder.append(":").append(type);
+		}
+		if (classifier != null) {
+			builder.append(":").append(classifier);
+		}
+		if (version != null) {
+			builder.append(":").append(version);
+		}
+		return builder.toString();
 	}
 
 }
