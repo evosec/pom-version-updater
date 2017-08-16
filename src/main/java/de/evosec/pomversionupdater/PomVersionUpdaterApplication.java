@@ -90,7 +90,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		git.getRepository().getRefDatabase().refresh();
 		IndexDiff diffIndex = new IndexDiff(git.getRepository(), Constants.HEAD,
 		    new FileTreeIterator(git.getRepository()));
-		if (diffIndex.diff()) {
+		if (diffIndex.diff() && diffIndex.getModified().contains("pom.xml")) {
 			throw new Exception("The working tree is not clean");
 		}
 	}
