@@ -45,6 +45,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	@Autowired
 	private PomVersionUpdaterProperties properties;
 	private String mavenCommand;
+	private final Path workingDirectory =
+	        Paths.get(System.getProperty("user.dir", "."));
 
 	public PomVersionUpdaterApplication() {
 		if (System.getProperty("os.name").toLowerCase().contains("win")) {
@@ -56,9 +58,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		Path pom = Paths.get(System.getProperty("user.dir", "."))
-		    .resolve("pom.xml").toAbsolutePath();
-		try (Git git = tryGit(pom)) {
+		Path pom = workingDirectory.resolve("pom.xml").toAbsolutePath();
+		try (Git git = tryGit()) {
 
 			assertWorkingTreeIsClean(git);
 
@@ -67,10 +68,10 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			            .findFirst();
 			if (beforeParent.isPresent()
 			        && beforeParent.get().getVersion() != null) {
-				ProcessBuilder processBuilder =
-				        new ProcessBuilder(mavenCommand, "--batch-mode",
-				            "--update-snapshots", "versions:update-parent",
-				            "-DgenerateBackupPoms=false").inheritIO();
+				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
+				    "--batch-mode", "--update-snapshots",
+				    "versions:update-parent", "-DgenerateBackupPoms=false")
+				        .inheritIO().directory(workingDirectory.toFile());
 				LOG.info("Calling {}", processBuilder.command());
 				Assert.isTrue(0 == processBuilder.start().waitFor(),
 				    "mvn failed");
@@ -86,9 +87,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		}
 	}
 
-	private Git tryGit(Path pom) {
+	private Git tryGit() {
 		try {
-			return Git.open(pom.getParent().toFile());
+			return Git.open(workingDirectory.toFile());
 		} catch (IOException e) {
 			LOG.error("Problem opening git repository. Will not use git", e);
 			return null;
@@ -114,10 +115,12 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		for (Artifact dependency : dependencies.stream()
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-			    "--batch-mode", "--update-snapshots",
+			    "-X", "--batch-mode", "--update-snapshots",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
-			    "-Dincludes=" + dependency).inheritIO();
-			LOG.info("Calling {}", processBuilder.command());
+			    "-Dincludes=" + dependency).inheritIO()
+			        .directory(workingDirectory.toFile());
+			LOG.info("Calling {} in {}", processBuilder.command(),
+			    processBuilder.directory());
 			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
 			    .stream().filter(a -> a.equals(dependency)).findAny().get();
