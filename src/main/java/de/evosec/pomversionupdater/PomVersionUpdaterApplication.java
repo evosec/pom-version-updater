@@ -56,7 +56,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
-		Path pom = Paths.get("pom.xml").toAbsolutePath();
+		Path pom = Paths.get(System.getProperty("user.dir", "."))
+		    .resolve("pom.xml").toAbsolutePath();
 		try (Git git = tryGit(pom)) {
 
 			assertWorkingTreeIsClean(git);
