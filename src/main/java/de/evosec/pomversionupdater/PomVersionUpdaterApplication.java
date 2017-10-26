@@ -115,7 +115,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		for (Artifact dependency : dependencies.stream()
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-			    "-X", "--batch-mode", "--update-snapshots",
+			    "--batch-mode", "--update-snapshots",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
 			    "-Dincludes=" + dependency).inheritIO()
 			        .directory(workingDirectory.toFile());
