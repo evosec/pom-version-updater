@@ -29,8 +29,8 @@ public abstract class AbstractTest {
 		System.setProperty("user.dir", directory.toString());
 
 		Path pom = directory.resolve("pom.xml");
-		Files.copy(new ClassPathResource(
-		    this.getClass().getSimpleName() + "-beforePom.xml")
+		Files.copy(
+		    new ClassPathResource(this.getClass().getSimpleName() + ".xml")
 		        .getInputStream(),
 		    pom);
 
