@@ -6,7 +6,7 @@ public class Artifact {
 
 	private final String groupId;
 	private final String artifactId;
-	private String type;
+	private String type = "jar";
 	private String classifier;
 	private String version;
 
