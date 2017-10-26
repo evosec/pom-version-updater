@@ -57,7 +57,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	@Override
 	public void run(ApplicationArguments args) throws Exception {
 		Path pom = Paths.get("pom.xml").toAbsolutePath();
-		try (Git git = Git.open(pom.getParent().toFile())) {
+		try (Git git = tryGit(pom)) {
 
 			assertWorkingTreeIsClean(git);
 
@@ -85,8 +85,20 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		}
 	}
 
+	private Git tryGit(Path pom) {
+		try {
+			return Git.open(pom.getParent().toFile());
+		} catch (IOException e) {
+			LOG.error("Problem opening git repository. Will not use git", e);
+			return null;
+		}
+	}
+
 	private void assertWorkingTreeIsClean(Git git)
 	        throws IOException, Exception {
+		if (git == null) {
+			return;
+		}
 		git.getRepository().getRefDatabase().refresh();
 		IndexDiff diffIndex = new IndexDiff(git.getRepository(), Constants.HEAD,
 		    new FileTreeIterator(git.getRepository()));
@@ -114,6 +126,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	private void commitIfNecessary(Git git, Artifact before, Artifact after)
 	        throws Exception {
+		if (git == null) {
+			return;
+		}
 		if (!after.getVersion().equals(before.getVersion())) {
 			String message =
 			        String.format("%s -> %s", before, after.getVersion());
