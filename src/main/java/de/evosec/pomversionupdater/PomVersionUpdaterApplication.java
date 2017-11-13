@@ -137,8 +137,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		if (!after.getVersion().equals(before.getVersion())) {
 			String message =
 			        String.format("%s -> %s", before, after.getVersion());
-			git.add().addFilepattern("pom.xml").call();
-			git.commit().setAllowEmpty(false).setMessage(message).call();
+			git.commit().setOnly("pom.xml").setAllowEmpty(false)
+			    .setMessage(message).call();
 			assertWorkingTreeIsClean(git);
 		}
 	}
