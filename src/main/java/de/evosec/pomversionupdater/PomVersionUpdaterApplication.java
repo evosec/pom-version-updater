@@ -68,8 +68,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			            .findFirst();
 			if (beforeParent.isPresent()
 			        && beforeParent.get().getVersion() != null) {
+				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-				    "--batch-mode", "--update-snapshots",
+				    "--batch-mode", "--update-snapshots", "--non-recursive",
 				    "versions:update-parent", "-DgenerateBackupPoms=false")
 				        .inheritIO().directory(workingDirectory.toFile());
 				LOG.info("Calling {}", processBuilder.command());
@@ -115,7 +116,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		for (Artifact dependency : dependencies.stream()
 		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-			    "--batch-mode", "--update-snapshots",
+			    "--batch-mode", "--update-snapshots", "--non-recursive",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
 			    "-Dincludes=" + dependency).inheritIO()
 			        .directory(workingDirectory.toFile());
@@ -136,8 +137,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		if (!after.getVersion().equals(before.getVersion())) {
 			String message =
 			        String.format("%s -> %s", before, after.getVersion());
-			git.add().addFilepattern("pom.xml").call();
-			git.commit().setAllowEmpty(false).setMessage(message).call();
+			git.commit().setOnly("pom.xml").setAllowEmpty(false)
+			    .setMessage(message).call();
 			assertWorkingTreeIsClean(git);
 		}
 	}
