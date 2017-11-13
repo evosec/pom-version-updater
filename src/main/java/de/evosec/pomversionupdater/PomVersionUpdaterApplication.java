@@ -68,6 +68,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			            .findFirst();
 			if (beforeParent.isPresent()
 			        && beforeParent.get().getVersion() != null) {
+				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 				    "--batch-mode", "--update-snapshots",
 				    "versions:update-parent", "-DgenerateBackupPoms=false")
