@@ -1,11 +1,11 @@
 package de.evosec.pomversionupdater;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class ParentPomTest extends AbstractTest {
 
-	@Before
-	public void setUp() throws Exception {
+	@BeforeEach
+	public void setUp() {
 		groupId = "org.springframework.boot";
 		select = "parent > version";
 		version = "1.5.5.RELEASE";

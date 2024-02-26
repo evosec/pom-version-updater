@@ -2,6 +2,7 @@ package de.evosec.pomversionupdater;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,22 +11,21 @@ import org.assertj.core.api.Assertions;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.core.io.ClassPathResource;
 
 public abstract class AbstractTest {
 
-	@Rule
-	public TemporaryFolder folder = new TemporaryFolder();
+    @TempDir
+	public Path directory ;
+
 	protected String groupId = "";
 	protected String select = "";
 	protected String version = "";
 
 	@Test
 	public void testName() throws Exception {
-		Path directory = folder.getRoot().toPath();
 		System.setProperty("user.dir", directory.toString());
 
 		Path pom = directory.resolve("pom.xml");
