@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Constants;
@@ -23,7 +22,6 @@ import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -42,14 +40,15 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
 	}
 
-	@Autowired
-	private PomVersionUpdaterProperties properties;
-	private String mavenCommand;
-	private final Path workingDirectory =
-	        Paths.get(System.getProperty("user.dir", "."));
+    private final Path workingDirectory =
+            Paths.get(System.getProperty("user.dir", "."));
 
-	public PomVersionUpdaterApplication() {
-		if (System.getProperty("os.name").toLowerCase().contains("win")) {
+    private final PomVersionUpdaterProperties properties;
+    private final String mavenCommand;
+
+	public PomVersionUpdaterApplication(PomVersionUpdaterProperties properties) {
+        this.properties = properties;
+        if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			mavenCommand = "mvn.cmd";
 		} else {
 			mavenCommand = "mvn";
@@ -98,7 +97,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	}
 
 	private void assertWorkingTreeIsClean(Git git)
-	        throws IOException, Exception {
+	        throws Exception {
 		if (git == null) {
 			return;
 		}
@@ -114,7 +113,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	        throws Exception {
 		List<Artifact> dependencies = selectArtifactsFromPom(pom, selector);
 		for (Artifact dependency : dependencies.stream()
-		    .filter(a -> a.getVersion() != null).collect(Collectors.toList())) {
+		    .filter(a -> a.getVersion() != null).toList()) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 			    "--batch-mode", "--update-snapshots", "--non-recursive",
 			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
@@ -124,7 +123,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			    processBuilder.directory());
 			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
 			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
-			    .stream().filter(a -> a.equals(dependency)).findAny().get();
+			    .stream().filter(a -> a.equals(dependency)).findAny().orElseThrow();
 			commitIfNecessary(git, dependency, afterDependency);
 		}
 	}
