@@ -11,7 +11,7 @@
 
     <groupId>de.evosec</groupId>
     <artifactId>pom-version-updater</artifactId>
-    <version>0.0.6-SNAPSHOT</version>
+    <version>0.0.5</version>
     <packaging>jar</packaging>
 
     <dependencyManagement>
