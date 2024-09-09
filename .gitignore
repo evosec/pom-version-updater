@@ -10,10 +10,15 @@ target/
 .springBeans
 
 ### IntelliJ IDEA ###
-.idea
+.idea/*
 *.iws
 *.iml
 *.ipr
+
+### Keep IDEA Plugin and Formatter Config ###
+!.idea/eclipseCodeFormatter.xml
+!.idea/evosec-eclipseformatter.xml
+!.idea/externalDependencies.xml
 
 ### NetBeans ###
 nbproject/private/

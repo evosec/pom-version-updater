@@ -6,12 +6,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.3.3</version>
     </parent>
 
     <groupId>de.evosec</groupId>
     <artifactId>pom-version-updater</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.6</version>
     <packaging>jar</packaging>
 
     <dependencyManagement>
@@ -19,12 +19,12 @@
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.17.2</version>
+                <version>1.18.1</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>
-                <version>6.8.0.202311291450-r</version>
+                <version>6.10.0.202406032230-r</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

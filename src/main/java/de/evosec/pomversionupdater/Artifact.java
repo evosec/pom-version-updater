@@ -52,9 +52,9 @@ public class Artifact {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-		        + (artifactId == null ? 0 : artifactId.hashCode());
+				+ (artifactId == null ? 0 : artifactId.hashCode());
 		result = prime * result
-		        + (classifier == null ? 0 : classifier.hashCode());
+				+ (classifier == null ? 0 : classifier.hashCode());
 		result = prime * result + (groupId == null ? 0 : groupId.hashCode());
 		result = prime * result + (type == null ? 0 : type.hashCode());
 		return result;
@@ -106,7 +106,7 @@ public class Artifact {
 	@Override
 	public String toString() {
 		StringBuilder builder =
-		        new StringBuilder(groupId).append(":").append(artifactId);
+				new StringBuilder(groupId).append(":").append(artifactId);
 		if (type != null) {
 			builder.append(":").append(type);
 		}

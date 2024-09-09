@@ -2,7 +2,6 @@ package de.evosec.pomversionupdater;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,8 +16,8 @@ import org.springframework.core.io.ClassPathResource;
 
 public abstract class AbstractTest {
 
-    @TempDir
-	public Path directory ;
+	@TempDir
+	public Path directory;
 
 	protected String groupId = "";
 	protected String select = "";
@@ -30,18 +29,18 @@ public abstract class AbstractTest {
 
 		Path pom = directory.resolve("pom.xml");
 		Files.copy(
-		    new ClassPathResource(this.getClass().getSimpleName() + ".xml")
-		        .getInputStream(),
-		    pom);
+			new ClassPathResource(this.getClass().getSimpleName() + ".xml")
+				.getInputStream(),
+			pom);
 
 		PomVersionUpdaterApplication
-		    .main(new String[] {"--groupId=" + groupId});
+			.main(new String[] {"--groupId=" + groupId});
 
 		try (InputStream inputStream = Files.newInputStream(pom)) {
 			Document document = Jsoup.parse(inputStream, UTF_8.name(), "",
-			    Parser.xmlParser());
+				Parser.xmlParser());
 			Assertions.assertThat(document.select(select).first().text())
-			    .isNotEqualTo(version);
+				.isNotEqualTo(version);
 		}
 	}
 
