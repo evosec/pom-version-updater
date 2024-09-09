@@ -34,21 +34,22 @@ import org.springframework.util.Assert;
 public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	private static final Logger LOG =
-	        LoggerFactory.getLogger(PomVersionUpdaterApplication.class);
+			LoggerFactory.getLogger(PomVersionUpdaterApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
 	}
 
-    private final Path workingDirectory =
-            Paths.get(System.getProperty("user.dir", "."));
+	private final Path workingDirectory =
+			Paths.get(System.getProperty("user.dir", "."));
 
-    private final PomVersionUpdaterProperties properties;
-    private final String mavenCommand;
+	private final PomVersionUpdaterProperties properties;
+	private final String mavenCommand;
 
-	public PomVersionUpdaterApplication(PomVersionUpdaterProperties properties) {
-        this.properties = properties;
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+	public PomVersionUpdaterApplication(
+			PomVersionUpdaterProperties properties) {
+		this.properties = properties;
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			mavenCommand = "mvn.cmd";
 		} else {
 			mavenCommand = "mvn";
@@ -63,27 +64,28 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			assertWorkingTreeIsClean(git);
 
 			Optional<Artifact> beforeParent =
-			        selectArtifactsFromPom(pom, "project > parent").stream()
-			            .findFirst();
+					selectArtifactsFromPom(pom, "project > parent").stream()
+						.findFirst();
 			if (beforeParent.isPresent()
-			        && beforeParent.get().getVersion() != null) {
+					&& beforeParent.get().getVersion() != null) {
 				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-				    "--batch-mode", "--update-snapshots", "--non-recursive",
-				    "versions:update-parent", "-DgenerateBackupPoms=false")
-				        .inheritIO().directory(workingDirectory.toFile());
+					"--batch-mode", "--update-snapshots", "--non-recursive",
+					"versions:update-parent", "-DgenerateBackupPoms=false")
+						.inheritIO()
+						.directory(workingDirectory.toFile());
 				LOG.info("Calling {}", processBuilder.command());
 				Assert.isTrue(0 == processBuilder.start().waitFor(),
-				    "mvn failed");
+					"mvn failed");
 				Artifact afterParent =
-				        selectArtifactsFromPom(pom, "project > parent").get(0);
+						selectArtifactsFromPom(pom, "project > parent").get(0);
 				commitIfNecessary(git, beforeParent.get(), afterParent);
 			}
 
 			processDependencies(pom, git,
-			    "project > dependencyManagement > dependencies > dependency");
+				"project > dependencyManagement > dependencies > dependency");
 			processDependencies(pom, git,
-			    "project > dependencies > dependency");
+				"project > dependencies > dependency");
 		}
 	}
 
@@ -96,64 +98,71 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		}
 	}
 
-	private void assertWorkingTreeIsClean(Git git)
-	        throws Exception {
+	private void assertWorkingTreeIsClean(Git git) throws Exception {
 		if (git == null) {
 			return;
 		}
 		git.getRepository().getRefDatabase().refresh();
 		IndexDiff diffIndex = new IndexDiff(git.getRepository(), Constants.HEAD,
-		    new FileTreeIterator(git.getRepository()));
+			new FileTreeIterator(git.getRepository()));
 		if (diffIndex.diff() && diffIndex.getModified().contains("pom.xml")) {
 			throw new Exception("The working tree is not clean");
 		}
 	}
 
 	private void processDependencies(Path pom, Git git, String selector)
-	        throws Exception {
+			throws Exception {
 		List<Artifact> dependencies = selectArtifactsFromPom(pom, selector);
 		for (Artifact dependency : dependencies.stream()
-		    .filter(a -> a.getVersion() != null).toList()) {
+			.filter(a -> a.getVersion() != null)
+			.toList()) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
-			    "--batch-mode", "--update-snapshots", "--non-recursive",
-			    "versions:use-latest-versions", "-DgenerateBackupPoms=false",
-			    "-Dincludes=" + dependency).inheritIO()
-			        .directory(workingDirectory.toFile());
+				"--batch-mode", "--update-snapshots", "--non-recursive",
+				"versions:use-latest-versions", "-DgenerateBackupPoms=false",
+				"-Dincludes=" + dependency).inheritIO()
+					.directory(workingDirectory.toFile());
 			LOG.info("Calling {} in {}", processBuilder.command(),
-			    processBuilder.directory());
+				processBuilder.directory());
 			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
-			Artifact afterDependency = selectArtifactsFromPom(pom, selector)
-			    .stream().filter(a -> a.equals(dependency)).findAny().orElseThrow();
+			Artifact afterDependency =
+					selectArtifactsFromPom(pom, selector).stream()
+						.filter(a -> a.equals(dependency))
+						.findAny()
+						.orElseThrow();
 			commitIfNecessary(git, dependency, afterDependency);
 		}
 	}
 
 	private void commitIfNecessary(Git git, Artifact before, Artifact after)
-	        throws Exception {
+			throws Exception {
 		if (git == null) {
 			return;
 		}
 		if (!after.getVersion().equals(before.getVersion())) {
 			String message =
-			        String.format("%s -> %s", before, after.getVersion());
-			git.commit().setOnly("pom.xml").setAllowEmpty(false)
-			    .setMessage(message).call();
+					String.format("%s -> %s", before, after.getVersion());
+			git.commit()
+				.setOnly("pom.xml")
+				.setAllowEmpty(false)
+				.setMessage(message)
+				.call();
 			assertWorkingTreeIsClean(git);
 		}
 	}
 
 	private List<Artifact> selectArtifactsFromPom(Path pom, String selector)
-	        throws IOException {
+			throws IOException {
 		List<Artifact> artifacts = new ArrayList<>();
 		try (InputStream inputStream = Files.newInputStream(pom)) {
 			Document document = Jsoup.parse(inputStream, UTF_8.name(), "",
-			    Parser.xmlParser());
+				Parser.xmlParser());
 			for (Element element : document.select(selector)) {
 				Artifact artifact =
-				        new Artifact(element.select("groupId").first().text(),
-				            element.select("artifactId").first().text());
-				if (!properties.getGroupId().isEmpty() && !properties
-				    .getGroupId().equalsIgnoreCase(artifact.getGroupId())) {
+						new Artifact(element.select("groupId").first().text(),
+							element.select("artifactId").first().text());
+				if (!properties.getGroupId().isEmpty()
+						&& !properties.getGroupId()
+							.equalsIgnoreCase(artifact.getGroupId())) {
 					continue;
 				}
 				Elements versionSelect = element.select("version");
