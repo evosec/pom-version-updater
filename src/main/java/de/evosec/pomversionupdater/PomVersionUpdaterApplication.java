@@ -71,7 +71,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 					"--batch-mode", "--update-snapshots", "--non-recursive",
-					"versions:update-parent", "-DgenerateBackupPoms=false")
+					"versions:update-parent", "-DgenerateBackupPoms=false",
+					"-DallowMajorUpdates=" + properties.isAllowMajorUpdates())
 						.inheritIO()
 						.directory(workingDirectory.toFile());
 				LOG.info("Calling {}", processBuilder.command());
@@ -119,6 +120,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 				"--batch-mode", "--update-snapshots", "--non-recursive",
 				"versions:use-latest-versions", "-DgenerateBackupPoms=false",
+				"-DallowMajorUpdates=" + properties.isAllowMajorUpdates(),
 				"-Dincludes=" + dependency).inheritIO()
 					.directory(workingDirectory.toFile());
 			LOG.info("Calling {} in {}", processBuilder.command(),
