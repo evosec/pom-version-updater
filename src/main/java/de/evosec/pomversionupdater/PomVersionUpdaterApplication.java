@@ -36,6 +36,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 	private static final Logger LOG =
 			LoggerFactory.getLogger(PomVersionUpdaterApplication.class);
 
+	private static final String MVN_VERSIONS_PLUGIN_VERSION = "2.17.1";
+
 	public static void main(String[] args) {
 		SpringApplication.run(PomVersionUpdaterApplication.class, args);
 	}
@@ -71,7 +73,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 					"--batch-mode", "--update-snapshots", "--non-recursive",
-					"versions:update-parent", "-DgenerateBackupPoms=false",
+					"versions:" + MVN_VERSIONS_PLUGIN_VERSION
+							+ ":update-parent",
+					"-DgenerateBackupPoms=false",
 					"-DallowMajorUpdates=" + properties.isAllowMajorUpdates())
 						.inheritIO()
 						.directory(workingDirectory.toFile());
@@ -119,7 +123,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			.toList()) {
 			ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 				"--batch-mode", "--update-snapshots", "--non-recursive",
-				"versions:use-latest-versions", "-DgenerateBackupPoms=false",
+				"versions:" + MVN_VERSIONS_PLUGIN_VERSION
+						+ ":use-latest-versions",
+				"-DgenerateBackupPoms=false",
 				"-DallowMajorUpdates=" + properties.isAllowMajorUpdates(),
 				"-Dincludes=" + dependency).inheritIO()
 					.directory(workingDirectory.toFile());
