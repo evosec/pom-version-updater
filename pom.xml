@@ -14,6 +14,21 @@
     <version>0.0.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <properties>
+        <!-- jgitflow -->
+        <jgitflow.developBranchName>develop</jgitflow.developBranchName>
+        <jgitflow.masterBranchName>master</jgitflow.masterBranchName>
+        <jgitflow.pushReleases>false</jgitflow.pushReleases>
+        <jgitflow.pushHotfixes>false</jgitflow.pushHotfixes>
+        <jgitflow.noDeploy>false</jgitflow.noDeploy>
+        <jgitflow.noReleaseBuild>true</jgitflow.noReleaseBuild>
+        <jgitflow.noFeatureBuild>true</jgitflow.noFeatureBuild>
+        <jgitflow.noHotfixBuild>true</jgitflow.noHotfixBuild>
+        <jgitflow.username>not-configured</jgitflow.username>
+        <jgitflow.password>not-configured</jgitflow.password>
+        <jgitflow.developmentVersion/>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -64,6 +79,27 @@
                 <configuration>
                     <executable>true</executable>
                     <embeddedLaunchScript>${project.basedir}/src/main/resources/launch.script</embeddedLaunchScript>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>1.0-m5.1</version>
+                <configuration>
+                    <flowInitContext>
+                        <developBranchName>${jgitflow.developBranchName}</developBranchName>
+                        <masterBranchName>${jgitflow.masterBranchName}</masterBranchName>
+                    </flowInitContext>
+                    <pushReleases>${jgitflow.pushReleases}</pushReleases>
+                    <pushHotfixes>${jgitflow.pushHotfixes}</pushHotfixes>
+                    <noDeploy>${jgitflow.noDeploy}</noDeploy>
+                    <noReleaseBuild>${jgitflow.noReleaseBuild}</noReleaseBuild>
+                    <noFeatureBuild>${jgitflow.noFeatureBuild}</noFeatureBuild>
+                    <noHotfixBuild>${jgitflow.noHotfixBuild}</noHotfixBuild>
+                    <developmentVersion>${jgitflow.developmentVersion}</developmentVersion>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <username>${jgitflow.username}</username>
+                    <password>${jgitflow.password}</password>
                 </configuration>
             </plugin>
         </plugins>
