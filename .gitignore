@@ -16,6 +16,7 @@ target/
 *.ipr
 
 ### Keep IDEA Plugin and Formatter Config ###
+!.idea/inspectionProfiles
 !.idea/eclipseCodeFormatter.xml
 !.idea/evosec-eclipseformatter.xml
 !.idea/externalDependencies.xml

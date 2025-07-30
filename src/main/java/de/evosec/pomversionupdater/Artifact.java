@@ -2,41 +2,39 @@ package de.evosec.pomversionupdater;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Objects;
+
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
 public class Artifact {
 
 	private final String groupId;
 	private final String artifactId;
-	private String type = "jar";
-	private String classifier;
-	private String version;
+	private final String type;
+	private final String classifier;
+	private final String version;
 
-	public Artifact(String groupId, String artifactId) {
+	Artifact(@NonNull String groupId, @NonNull String artifactId,
+			@NonNull String type, @NonNull String classifier,
+			@Nullable String version) {
 		this.groupId = requireNonNull(groupId);
 		this.artifactId = requireNonNull(artifactId);
+		this.type = requireNonNull(type);
+		this.classifier = requireNonNull(classifier);
+		this.version = requireNonNull(version);
 	}
 
 	public String getType() {
 		return type;
 	}
 
-	public void setType(String type) {
-		this.type = type;
-	}
-
 	public String getClassifier() {
 		return classifier;
 	}
 
-	public void setClassifier(String classifier) {
-		this.classifier = classifier;
-	}
-
 	public String getVersion() {
 		return version;
-	}
-
-	public void setVersion(String version) {
-		this.version = version;
 	}
 
 	public String getGroupId() {
@@ -48,71 +46,35 @@ public class Artifact {
 	}
 
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ (artifactId == null ? 0 : artifactId.hashCode());
-		result = prime * result
-				+ (classifier == null ? 0 : classifier.hashCode());
-		result = prime * result + (groupId == null ? 0 : groupId.hashCode());
-		result = prime * result + (type == null ? 0 : type.hashCode());
-		return result;
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Artifact artifact = (Artifact) o;
+		return Objects.equals(groupId, artifact.groupId)
+				&& Objects.equals(artifactId, artifact.artifactId)
+				&& Objects.equals(type, artifact.type)
+				&& Objects.equals(classifier, artifact.classifier);
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		Artifact other = (Artifact) obj;
-		if (artifactId == null) {
-			if (other.artifactId != null) {
-				return false;
-			}
-		} else if (!artifactId.equals(other.artifactId)) {
-			return false;
-		}
-		if (classifier == null) {
-			if (other.classifier != null) {
-				return false;
-			}
-		} else if (!classifier.equals(other.classifier)) {
-			return false;
-		}
-		if (groupId == null) {
-			if (other.groupId != null) {
-				return false;
-			}
-		} else if (!groupId.equals(other.groupId)) {
-			return false;
-		}
-		if (type == null) {
-			if (other.type != null) {
-				return false;
-			}
-		} else if (!type.equals(other.type)) {
-			return false;
-		}
-		return true;
+	public int hashCode() {
+		return Objects.hash(groupId, artifactId, type, classifier);
 	}
 
+	/**
+	 * Returns the string representation of the artifact in pattern
+	 * {@code groupId:artifactId:type:classifier[:version]}. The {@code version}
+	 * part is omitted if {@code null}.
+	 */
 	@Override
 	public String toString() {
-		StringBuilder builder =
-				new StringBuilder(groupId).append(":").append(artifactId);
-		if (type != null) {
-			builder.append(":").append(type);
-		}
-		if (classifier != null) {
-			builder.append(":").append(classifier);
-		}
+		StringBuilder builder = new StringBuilder(groupId).append(":")
+			.append(artifactId)
+			.append(":")
+			.append(type)
+			.append(":")
+			.append(classifier);
 		if (version != null) {
 			builder.append(":").append(version);
 		}
