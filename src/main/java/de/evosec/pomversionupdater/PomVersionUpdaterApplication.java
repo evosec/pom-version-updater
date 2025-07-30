@@ -1,6 +1,7 @@
 package de.evosec.pomversionupdater;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -167,8 +168,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			Document document = Jsoup.parse(inputStream, UTF_8.name(), "",
 				Parser.xmlParser());
 			for (Element element : document.select(selector)) {
-				String groupId = element.select("groupId").first().text();
-				String artifactId = element.select("artifactId").first().text();
+				String groupId = selectValue(element, "groupId", null);
+				String artifactId = selectValue(element, "artifactId", null);
 				if (shouldSkipArtifact(groupId)) {
 					continue;
 				}
@@ -188,12 +189,16 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			String defaultValue) {
 		Elements versionSelect = element.select(cssQuery);
 		if (!versionSelect.isEmpty()) {
-			return versionSelect.first().text();
+			return requireNonNull(versionSelect.first()).text();
 		}
 		return defaultValue;
 	}
 
 	private boolean shouldSkipArtifact(String artifactGroupId) {
+		if (artifactGroupId == null) {
+			return true;
+		}
+
 		String groupId = properties.getGroupId();
 		if (groupId.isEmpty()) {
 			return false;
