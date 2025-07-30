@@ -66,11 +66,11 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			assertWorkingTreeIsClean(git);
 
 			Optional<Artifact> beforeParent =
-					selectArtifactsFromPom(pom, "project > parent").stream()
+					selectArtifactsFromPom(pom, "project > parent", "pom")
+						.stream()
 						.findFirst();
 			if (beforeParent.isPresent()
 					&& beforeParent.get().getVersion() != null) {
-				beforeParent.get().setType("pom");
 				ProcessBuilder processBuilder = new ProcessBuilder(mavenCommand,
 					"--batch-mode", "--update-snapshots", "--non-recursive",
 					"versions:" + MVN_VERSIONS_PLUGIN_VERSION
@@ -83,7 +83,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				Assert.isTrue(0 == processBuilder.start().waitFor(),
 					"mvn failed");
 				Artifact afterParent =
-						selectArtifactsFromPom(pom, "project > parent").get(0);
+						selectArtifactsFromPom(pom, "project > parent", "jar")
+							.get(0);
 				commitIfNecessary(git, beforeParent.get(), afterParent);
 			}
 
@@ -117,7 +118,8 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 
 	private void processDependencies(Path pom, Git git, String selector)
 			throws Exception {
-		List<Artifact> dependencies = selectArtifactsFromPom(pom, selector);
+		List<Artifact> dependencies =
+				selectArtifactsFromPom(pom, selector, "jar");
 		for (Artifact dependency : dependencies.stream()
 			.filter(a -> a.getVersion() != null)
 			.toList()) {
@@ -133,7 +135,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				processBuilder.directory());
 			Assert.isTrue(0 == processBuilder.start().waitFor(), "mvn failed");
 			Artifact afterDependency =
-					selectArtifactsFromPom(pom, selector).stream()
+					selectArtifactsFromPom(pom, selector, "jar").stream()
 						.filter(a -> a.equals(dependency))
 						.findAny()
 						.orElseThrow();
@@ -158,38 +160,40 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		}
 	}
 
-	private List<Artifact> selectArtifactsFromPom(Path pom, String selector)
-			throws IOException {
+	private List<Artifact> selectArtifactsFromPom(Path pom, String selector,
+			String defaultType) throws IOException {
 		List<Artifact> artifacts = new ArrayList<>();
 		try (InputStream inputStream = Files.newInputStream(pom)) {
 			Document document = Jsoup.parse(inputStream, UTF_8.name(), "",
 				Parser.xmlParser());
 			for (Element element : document.select(selector)) {
-				Artifact artifact =
-						new Artifact(element.select("groupId").first().text(),
-							element.select("artifactId").first().text());
-				if (shouldSkipArtifact(artifact)) {
+				String groupId = element.select("groupId").first().text();
+				String artifactId = element.select("artifactId").first().text();
+				if (shouldSkipArtifact(groupId)) {
 					continue;
 				}
-				Elements versionSelect = element.select("version");
-				if (!versionSelect.isEmpty()) {
-					artifact.setVersion(versionSelect.first().text());
-				}
-				Elements classifierSelect = element.select("classifier");
-				if (!classifierSelect.isEmpty()) {
-					artifact.setClassifier(classifierSelect.first().text());
-				}
-				Elements typeSelect = element.select("type");
-				if (!typeSelect.isEmpty()) {
-					artifact.setType(typeSelect.first().text());
-				}
-				artifacts.add(artifact);
+
+				String type = selectValue(element, "type", defaultType);
+				String classifier = selectValue(element, "classifier", "*");
+				String version = selectValue(element, "version", null);
+
+				artifacts.add(new Artifact(groupId, artifactId, type,
+					classifier, version));
 			}
 		}
 		return artifacts;
 	}
 
-	private boolean shouldSkipArtifact(Artifact artifact) {
+	private static String selectValue(Element element, String cssQuery,
+			String defaultValue) {
+		Elements versionSelect = element.select(cssQuery);
+		if (!versionSelect.isEmpty()) {
+			return versionSelect.first().text();
+		}
+		return defaultValue;
+	}
+
+	private boolean shouldSkipArtifact(String artifactGroupId) {
 		String groupId = properties.getGroupId();
 		if (groupId.isEmpty()) {
 			return false;
@@ -198,11 +202,10 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		if (groupId.endsWith("*")) {
 			// Remove trailing *
 			String cleanGroupId = groupId.substring(0, groupId.length() - 1);
-			return !artifact.getGroupId()
-				.toLowerCase()
+			return !artifactGroupId.toLowerCase()
 				.startsWith(cleanGroupId.toLowerCase());
 		} else {
-			return !groupId.equalsIgnoreCase(artifact.getGroupId());
+			return !groupId.equalsIgnoreCase(artifactGroupId);
 		}
 	}
 }
