@@ -150,8 +150,9 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 			return;
 		}
 		if (!after.getVersion().equals(before.getVersion())) {
-			String message =
-					String.format("%s -> %s", before, after.getVersion());
+			String message = "%s:%s: %s -> %s".formatted(before.getGroupId(),
+				before.getArtifactId(), before.getVersion(),
+				after.getVersion());
 			git.commit()
 				.setOnly("pom.xml")
 				.setAllowEmpty(false)
