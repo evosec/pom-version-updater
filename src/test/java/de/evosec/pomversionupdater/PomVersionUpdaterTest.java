@@ -34,8 +34,18 @@ public class PomVersionUpdaterTest {
 			"PomImportInDependencyManagementTest.xml", "com.fasterxml.jackson",
 			"dependencyManagement version", "2.9.1");
 
+		TestCase dependencyInDependencyManagementWithWildcard =
+				new TestCase("DependencyInDependencyManagementTest.xml",
+					"org.jsoup*", "dependencyManagement version", "1.10.2");
+
+		TestCase pomImportInDependencyManagementWithWildcard =
+				new TestCase("PomImportInDependencyManagementTest.xml",
+					"com.fasterxml*", "dependencyManagement version", "2.9.1");
+
 		return Stream.of(parentPom, dependencyInDependencyManagement,
-			pomImportInDependencyManagement);
+			pomImportInDependencyManagement,
+			dependencyInDependencyManagementWithWildcard,
+			pomImportInDependencyManagementWithWildcard);
 	}
 
 	@ParameterizedTest

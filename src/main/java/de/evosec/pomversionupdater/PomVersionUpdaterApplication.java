@@ -168,9 +168,7 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 				Artifact artifact =
 						new Artifact(element.select("groupId").first().text(),
 							element.select("artifactId").first().text());
-				if (!properties.getGroupId().isEmpty()
-						&& !properties.getGroupId()
-							.equalsIgnoreCase(artifact.getGroupId())) {
+				if (shouldSkipArtifact(artifact)) {
 					continue;
 				}
 				Elements versionSelect = element.select("version");
@@ -191,4 +189,20 @@ public class PomVersionUpdaterApplication implements ApplicationRunner {
 		return artifacts;
 	}
 
+	private boolean shouldSkipArtifact(Artifact artifact) {
+		String groupId = properties.getGroupId();
+		if (groupId.isEmpty()) {
+			return false;
+		}
+
+		if (groupId.endsWith("*")) {
+			// Remove trailing *
+			String cleanGroupId = groupId.substring(0, groupId.length() - 1);
+			return !artifact.getGroupId()
+				.toLowerCase()
+				.startsWith(cleanGroupId.toLowerCase());
+		} else {
+			return !groupId.equalsIgnoreCase(artifact.getGroupId());
+		}
+	}
 }
