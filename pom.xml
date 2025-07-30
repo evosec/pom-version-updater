@@ -11,7 +11,7 @@
 
     <groupId>de.evosec</groupId>
     <artifactId>pom-version-updater</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -26,7 +26,7 @@
         <jgitflow.noHotfixBuild>true</jgitflow.noHotfixBuild>
         <jgitflow.username>not-configured</jgitflow.username>
         <jgitflow.password>not-configured</jgitflow.password>
-        <jgitflow.developmentVersion/>
+        <jgitflow.developmentVersion />
     </properties>
 
     <dependencyManagement>
