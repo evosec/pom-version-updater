@@ -26,7 +26,7 @@
         <jgitflow.noHotfixBuild>true</jgitflow.noHotfixBuild>
         <jgitflow.username>not-configured</jgitflow.username>
         <jgitflow.password>not-configured</jgitflow.password>
-        <jgitflow.developmentVersion/>
+        <jgitflow.developmentVersion />
     </properties>
 
     <dependencyManagement>
