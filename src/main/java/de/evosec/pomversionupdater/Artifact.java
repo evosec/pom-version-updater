@@ -13,6 +13,7 @@ public class Artifact {
 	private final String artifactId;
 	private final String type;
 	private final String classifier;
+	@Nullable
 	private final String version;
 
 	Artifact(@NonNull String groupId, @NonNull String artifactId,
@@ -22,7 +23,7 @@ public class Artifact {
 		this.artifactId = requireNonNull(artifactId);
 		this.type = requireNonNull(type);
 		this.classifier = requireNonNull(classifier);
-		this.version = requireNonNull(version);
+		this.version = version;
 	}
 
 	public String getType() {
@@ -33,6 +34,7 @@ public class Artifact {
 		return classifier;
 	}
 
+	@Nullable
 	public String getVersion() {
 		return version;
 	}
